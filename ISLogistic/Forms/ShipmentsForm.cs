@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Data.OleDb;
-using System.Net;
 using System.Windows.Forms;
 
 namespace ISLogistic.Forms
@@ -28,13 +27,13 @@ namespace ISLogistic.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка при загрузке формы: " + ex.Message);
+                MessageBox.Show("Ошибка при загрузке формы:\n" + ex.Message);
             }
         }
 
         private void LoadOrders()
         {
-            string sql = "SELECT OrderID FROM Orders";
+            string sql = "SELECT [OrderID] FROM [Orders]";
             DataTable table = Database.ExecuteQuery(sql);
 
             comboBoxOrder.DataSource = null;
@@ -46,7 +45,7 @@ namespace ISLogistic.Forms
 
         private void LoadDrivers()
         {
-            string sql = "SELECT DriverID, FullName FROM Drivers";
+            string sql = "SELECT [DriverID], [FullName] FROM [Drivers]";
             DataTable table = Database.ExecuteQuery(sql);
 
             comboBoxDriver.DataSource = null;
@@ -58,7 +57,7 @@ namespace ISLogistic.Forms
 
         private void LoadVehicles()
         {
-            string sql = "SELECT VehicleID, PlateNumber FROM Vehicles";
+            string sql = "SELECT [VehicleID], [PlateNumber] FROM [Vehicles]";
             DataTable table = Database.ExecuteQuery(sql);
 
             comboBoxVehicle.DataSource = null;
@@ -70,8 +69,7 @@ namespace ISLogistic.Forms
 
         private void LoadRoutes()
         {
-            string sql = @"SELECT VehicleID, PlateNumber FROM Vehicles
-                            SELECT RouteID, StartPoint & ' - ' & EndPoint AS RouteName FROM Routes";
+            string sql = "SELECT [RouteID], [StartPoint] & ' - ' & [EndPoint] AS [RouteName] FROM [Routes]";
             DataTable table = Database.ExecuteQuery(sql);
 
             comboBoxRoute.DataSource = null;
@@ -84,28 +82,31 @@ namespace ISLogistic.Forms
         private void LoadShipments()
         {
             string sql = @"
-                SELECT 
-                    Shipments.ShipmentID,
-                    Shipments.OrderID,
-                    Shipments.DriverID,
-                    Shipments.VehicleID,
-                    Shipments.RouteID,
-                    Drivers.FullName,
-                    Vehicles.PlateNumber,
-                    Routes.StartPoint & ' - ' & Routes.EndPoint AS Route,
-                    Shipments.DepartureDate,
-                    Shipments.ArrivalDate,
-                    Shipments.Status
-                FROM ((Shipments
-                    INNER JOIN Drivers ON Shipments.DriverID = Drivers.DriverID)
-                    INNER JOIN Vehicles ON Shipments.VehicleID = Vehicles.VehicleID)
-                    INNER JOIN Routes ON Shipments.RouteID = Routes.RouteID
-                ORDER BY Shipments.ShipmentID";
+                SELECT
+                    [Shipments].[ShipmentID],
+                    [Shipments].[OrderID],
+                    [Shipments].[DriverID],
+                    [Shipments].[VehicleID],
+                    [Shipments].[RouteID],
+                    [Drivers].[FullName],
+                    [Vehicles].[PlateNumber],
+                    [Routes].[StartPoint] & ' - ' & [Routes].[EndPoint] AS [RouteName],
+                    [Shipments].[DepartureDate],
+                    [Shipments].[PlannedArrivalDate],
+                    [Shipments].[ActualArrivalDate],
+                    [Shipments].[ShipmentStatus],
+                    [Shipments].[Notes]
+                FROM
+                    (([Shipments]
+                    INNER JOIN [Drivers] ON [Shipments].[DriverID] = [Drivers].[DriverID])
+                    INNER JOIN [Vehicles] ON [Shipments].[VehicleID] = [Vehicles].[VehicleID])
+                    INNER JOIN [Routes] ON [Shipments].[RouteID] = [Routes].[RouteID]
+                ORDER BY [Shipments].[ShipmentID]";
 
-            dgvShipments.DataSource = Database.ExecuteQuery(sql);
+            DataTable table = Database.ExecuteQuery(sql);
+            dgvShipments.DataSource = table;
             dgvShipments.ClearSelection();
 
-            // Можно скрыть технические ID, если не хочешь показывать их пользователю
             if (dgvShipments.Columns.Contains("DriverID"))
                 dgvShipments.Columns["DriverID"].Visible = false;
 
@@ -128,7 +129,6 @@ namespace ISLogistic.Forms
 
             textBoxStatus.Clear();
             selectedShipmentId = -1;
-
             dgvShipments.ClearSelection();
         }
 
@@ -164,14 +164,14 @@ namespace ISLogistic.Forms
 
             if (string.IsNullOrWhiteSpace(textBoxStatus.Text))
             {
-                MessageBox.Show("Введите статус");
+                MessageBox.Show("Введите статус перевозки");
                 textBoxStatus.Focus();
                 return false;
             }
 
             if (dateTimePickerArrival.Value < dateTimePickerDeparture.Value)
             {
-                MessageBox.Show("Дата прибытия не может быть раньше даты отправки");
+                MessageBox.Show("Плановая дата прибытия не может быть раньше даты отправки");
                 dateTimePickerArrival.Focus();
                 return false;
             }
@@ -195,17 +195,17 @@ namespace ISLogistic.Forms
                 comboBoxVehicle.SelectedValue = row.Cells["VehicleID"].Value;
                 comboBoxRoute.SelectedValue = row.Cells["RouteID"].Value;
 
-                textBoxStatus.Text = row.Cells["Status"].Value?.ToString() ?? "";
+                textBoxStatus.Text = row.Cells["ShipmentStatus"].Value?.ToString() ?? "";
 
                 if (row.Cells["DepartureDate"].Value != DBNull.Value && row.Cells["DepartureDate"].Value != null)
                     dateTimePickerDeparture.Value = Convert.ToDateTime(row.Cells["DepartureDate"].Value);
 
-                if (row.Cells["ArrivalDate"].Value != DBNull.Value && row.Cells["ArrivalDate"].Value != null)
-                    dateTimePickerArrival.Value = Convert.ToDateTime(row.Cells["ArrivalDate"].Value);
+                if (row.Cells["PlannedArrivalDate"].Value != DBNull.Value && row.Cells["PlannedArrivalDate"].Value != null)
+                    dateTimePickerArrival.Value = Convert.ToDateTime(row.Cells["PlannedArrivalDate"].Value);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка при выборе строки: " + ex.Message);
+                MessageBox.Show("Ошибка при выборе строки:\n" + ex.Message);
             }
         }
 
@@ -217,19 +217,21 @@ namespace ISLogistic.Forms
             try
             {
                 string sql = @"
-                    INSERT INTO Shipments
-                    (OrderID, DriverID, VehicleID, RouteID, DepartureDate, ArrivalDate, Status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    INSERT INTO [Shipments]
+                    ([OrderID], [VehicleID], [DriverID], [RouteID], [DepartureDate], [PlannedArrivalDate], [ActualArrivalDate], [ShipmentStatus], [Notes])
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 int result = Database.ExecuteNonQuery(
                     sql,
                     new OleDbParameter("@p1", Convert.ToInt32(comboBoxOrder.SelectedValue)),
-                    new OleDbParameter("@p2", Convert.ToInt32(comboBoxDriver.SelectedValue)),
-                    new OleDbParameter("@p3", Convert.ToInt32(comboBoxVehicle.SelectedValue)),
+                    new OleDbParameter("@p2", Convert.ToInt32(comboBoxVehicle.SelectedValue)),
+                    new OleDbParameter("@p3", Convert.ToInt32(comboBoxDriver.SelectedValue)),
                     new OleDbParameter("@p4", Convert.ToInt32(comboBoxRoute.SelectedValue)),
                     new OleDbParameter("@p5", dateTimePickerDeparture.Value),
                     new OleDbParameter("@p6", dateTimePickerArrival.Value),
-                    new OleDbParameter("@p7", textBoxStatus.Text.Trim())
+                    new OleDbParameter("@p7", DBNull.Value),
+                    new OleDbParameter("@p8", textBoxStatus.Text.Trim()),
+                    new OleDbParameter("@p9", DBNull.Value)
                 );
 
                 if (result > 0)
@@ -245,7 +247,7 @@ namespace ISLogistic.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка при добавлении: " + ex.Message);
+                MessageBox.Show("Ошибка при добавлении:\n" + ex.Message);
             }
         }
 
@@ -263,22 +265,22 @@ namespace ISLogistic.Forms
             try
             {
                 string sql = @"
-                    UPDATE Shipments
+                    UPDATE [Shipments]
                     SET
-                        OrderID = ?,
-                        DriverID = ?,
-                        VehicleID = ?,
-                        RouteID = ?,
-                        DepartureDate = ?,
-                        ArrivalDate = ?,
-                        Status = ?
-                    WHERE ShipmentID = ?";
+                        [OrderID] = ?,
+                        [VehicleID] = ?,
+                        [DriverID] = ?,
+                        [RouteID] = ?,
+                        [DepartureDate] = ?,
+                        [PlannedArrivalDate] = ?,
+                        [ShipmentStatus] = ?
+                    WHERE [ShipmentID] = ?";
 
                 int result = Database.ExecuteNonQuery(
                     sql,
                     new OleDbParameter("@p1", Convert.ToInt32(comboBoxOrder.SelectedValue)),
-                    new OleDbParameter("@p2", Convert.ToInt32(comboBoxDriver.SelectedValue)),
-                    new OleDbParameter("@p3", Convert.ToInt32(comboBoxVehicle.SelectedValue)),
+                    new OleDbParameter("@p2", Convert.ToInt32(comboBoxVehicle.SelectedValue)),
+                    new OleDbParameter("@p3", Convert.ToInt32(comboBoxDriver.SelectedValue)),
                     new OleDbParameter("@p4", Convert.ToInt32(comboBoxRoute.SelectedValue)),
                     new OleDbParameter("@p5", dateTimePickerDeparture.Value),
                     new OleDbParameter("@p6", dateTimePickerArrival.Value),
@@ -299,7 +301,7 @@ namespace ISLogistic.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка при обновлении: " + ex.Message);
+                MessageBox.Show("Ошибка при обновлении:\n" + ex.Message);
             }
         }
 
@@ -322,7 +324,7 @@ namespace ISLogistic.Forms
 
             try
             {
-                string sql = "DELETE FROM Shipments WHERE ShipmentID = ?";
+                string sql = "DELETE FROM [Shipments] WHERE [ShipmentID] = ?";
                 int result = Database.ExecuteNonQuery(
                     sql,
                     new OleDbParameter("@p1", selectedShipmentId)
@@ -341,7 +343,7 @@ namespace ISLogistic.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка при удалении: " + ex.Message);
+                MessageBox.Show("Ошибка при удалении:\n" + ex.Message);
             }
         }
 
