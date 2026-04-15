@@ -19,7 +19,7 @@ namespace ISLogistic.Forms
 
         private void LoadRoles()
         {
-            string sql = "SELECT [RoleID], [RoleName] FROM [Roles]";
+            string sql = "SELECT [RoleID], [RoleName] FROM [Roles] WHERE [RoleID] <> 1";
 
             DataTable table = Database.ExecuteQuery(sql);
 
@@ -36,7 +36,7 @@ namespace ISLogistic.Forms
                 if (string.IsNullOrWhiteSpace(textBoxFullName.Text) ||
                     string.IsNullOrWhiteSpace(textBoxPhone.Text) ||
                     string.IsNullOrWhiteSpace(textBoxEmail.Text) ||
-                    string.IsNullOrWhiteSpace(textBoxPosition.Text) ||
+                    //string.IsNullOrWhiteSpace(textBoxPosition.Text) ||
                     string.IsNullOrWhiteSpace(textBoxLogin.Text) ||
                     string.IsNullOrWhiteSpace(textBoxPassword.Text) ||
                     comboBoxRole.SelectedIndex == -1)
@@ -63,15 +63,14 @@ namespace ISLogistic.Forms
                 }
 
                 string insertEmployeeSql = @"
-                    INSERT INTO [Employees] ([FullName], [Phone], [Email], [Position])
-                    VALUES (?, ?, ?, ?)";
+                    INSERT INTO [Employees] ([FullName], [Phone], [Email])
+                    VALUES (?, ?, ?)";
 
                 int rows1 = Database.ExecuteNonQuery(
                     insertEmployeeSql,
                     new OleDbParameter("@p1", textBoxFullName.Text.Trim()),
                     new OleDbParameter("@p2", textBoxPhone.Text.Trim()),
-                    new OleDbParameter("@p3", textBoxEmail.Text.Trim()),
-                    new OleDbParameter("@p4", textBoxPosition.Text.Trim())
+                    new OleDbParameter("@p3", textBoxEmail.Text.Trim())
                 );
 
                 if (rows1 <= 0)

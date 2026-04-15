@@ -219,7 +219,7 @@ namespace ISLogistic.Forms
 
         private void btnBack_Click(object sender, EventArgs e)
         {
-            MainForm mainForm = new MainForm(0, 0, ""); // Здесь нужно передать реальные данные пользователя
+            MainForm mainForm = new MainForm(0, 0, "");
             this.Close();
 
         }

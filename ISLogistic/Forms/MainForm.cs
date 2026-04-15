@@ -37,6 +37,7 @@ namespace ISLogistic.Forms
             if (roleId == 2) // LOGIST
             {
                 btnEmployees.Enabled = false;
+                btnPayments.Enabled = false;
             }
         }
 
