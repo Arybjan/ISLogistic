@@ -8,10 +8,11 @@ namespace ISLogistic.Forms
     public partial class ShipmentsForm : Form
     {
         private int selectedShipmentId = -1;
-
-        public ShipmentsForm()
+        private int roleId;
+        public ShipmentsForm(int id)
         {
             InitializeComponent();
+            roleId = id;
         }
 
         private void ShipmentsForm_Load(object sender, EventArgs e)
@@ -24,6 +25,13 @@ namespace ISLogistic.Forms
                 LoadRoutes();
                 LoadShipments();
                 ClearFields();
+
+
+                if (roleId == 3) // Бухгалтер
+                {
+                    btnDelete.Enabled = false;
+                    btnUpdate.Enabled = false;
+                }
             }
             catch (Exception ex)
             {

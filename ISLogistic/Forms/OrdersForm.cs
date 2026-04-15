@@ -9,10 +9,12 @@ namespace ISLogistic.Forms
     public partial class OrdersForm : Form
     {
         private int selectedOrderId = -1;
+        private int roleId;
 
-        public OrdersForm()
+        public OrdersForm(int id)
         {
             InitializeComponent();
+            roleId = id;
         }
 
         private void OrdersForm_Load(object sender, EventArgs e)
@@ -20,6 +22,12 @@ namespace ISLogistic.Forms
             LoadClients();
             LoadStatuses();
             LoadOrders();
+
+            if (roleId == 3) // Бухгалтер
+            {
+                btnDelete.Enabled = false;
+                btnUpdate.Enabled = false;
+            }
         }
 
         private void LoadClients()

@@ -20,7 +20,7 @@ namespace ISLogistic.Forms
         {
             LoadClients();
 
-            if (roleID == 3)
+            if (roleID == 2)
             {
                 btnDelete.Enabled = false;
                 btnUpdate.Enabled = false;

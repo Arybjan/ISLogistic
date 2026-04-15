@@ -24,14 +24,17 @@ namespace ISLogistic.Forms
             labelRole.Text = $"Роль: {GetRoleName(roleId)}";
 
             // Роли
-            if (roleId == 3) // USER
+            if (roleId == 3) // Бухгалтер
             {
                 btnEmployees.Enabled = false;
-                btnPayments.Enabled = false;
+                btnVehicles.Enabled = false;
                 btnDrivers.Enabled = false;
+                btnRoutes.Enabled = false;
+                btnCargo.Enabled = false;
+
             }
 
-            if (roleId == 2) // MANAGER
+            if (roleId == 2) // LOGIST
             {
                 btnEmployees.Enabled = false;
             }
@@ -42,8 +45,8 @@ namespace ISLogistic.Forms
             if (role == 1)
                 return "Администратор";
             else if (role == 2)
-                return "Клиент";
-            else return "Логист";
+                return "Логист";
+            return "Бухгалтер";
         }
 
         private void btnClients_Click(object sender, EventArgs e)
@@ -54,7 +57,7 @@ namespace ISLogistic.Forms
         }
         private void btnOrders_Click(object sender, EventArgs e)
         {
-            OrdersForm form = new OrdersForm();
+            OrdersForm form = new OrdersForm(roleId);
             form.ShowDialog();
         }
 
@@ -78,7 +81,7 @@ namespace ISLogistic.Forms
 
         private void btnDrivers_Click(object sender, EventArgs e)
         {
-            DriversForm form = new DriversForm();
+            DriversForm form = new DriversForm(roleId);
             form.ShowDialog();
         }
 
@@ -96,7 +99,7 @@ namespace ISLogistic.Forms
 
         private void btnShipments_Click(object sender, EventArgs e)
         {
-            ShipmentsForm form = new ShipmentsForm();
+            ShipmentsForm form = new ShipmentsForm(roleId);
             form.ShowDialog();
         }
 

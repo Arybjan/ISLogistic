@@ -9,15 +9,23 @@ namespace ISLogistic.Forms
     public partial class DriversForm : Form
     {
         private int selectedDriverId = -1;
+        private int roleID;
 
-        public DriversForm()
+        public DriversForm(int id)
         {
             InitializeComponent();
+            roleID = id;
         }
 
         private void DriversForm_Load(object sender, EventArgs e)
         {
             LoadDrivers();
+
+            if (roleID == 2)
+            {
+                btnDelete.Enabled = false;
+                btnUpdate.Enabled = false;
+            }
         }
 
         private void LoadDrivers()
